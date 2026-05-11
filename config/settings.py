@@ -17,6 +17,8 @@ ALLOWED_HOSTS = ['*']
 # Applications
 # ---------------------------------------------------------------------------
 INSTALLED_APPS = [
+    'django.contrib.contenttypes',
+    'django.contrib.auth',
     # Third-party
     'corsheaders',
     'rest_framework',
