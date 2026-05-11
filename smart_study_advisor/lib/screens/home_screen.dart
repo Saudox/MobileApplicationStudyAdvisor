@@ -23,13 +23,21 @@ class _HomeScreenState extends State<HomeScreen> {
     RecommendationsScreen(),
   ];
 
+  void _onTabChanged(int i) {
+    setState(() => _currentIndex = i);
+    // Refresh stats whenever user goes back to dashboard
+    if (i == 0) {
+      context.read<StudentProvider>().fetchStats();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _screens),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) => setState(() => _currentIndex = i),
+        onDestinationSelected: _onTabChanged,
         destinations: const [
           NavigationDestination(
             icon: Icon(Icons.dashboard_outlined),
