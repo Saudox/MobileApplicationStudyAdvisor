@@ -37,7 +37,7 @@ class CourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final catColor = AppTheme.categoryColor(course.category);
     return GestureDetector(
-      onTap: onTap,
+      onTap: onToggleComplete, // Re-wired to toggle completion instead of opening detail screen
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         margin: const EdgeInsets.only(bottom: 10),

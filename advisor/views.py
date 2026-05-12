@@ -108,21 +108,48 @@ class AIChatView(APIView):
         # 1. Create the Groq client
         client = Groq(api_key=settings.GROQ_API_KEY)
 
-        # 2. Build the context
-        completed_str = ', '.join(completed) if completed else 'None yet'
+        # 2. Fetch the REAL course catalog from the Prolog database
+        advisor = PrologAdvisor()
+        all_courses = advisor.get_all_courses()
+        completed_set = set(completed)
+
+        # Build two separate lists: what they finished vs what they can take
+        completed_courses = [c for c in all_courses if c['code'] in completed_set]
+        available_courses = [c for c in all_courses if c['code'] not in completed_set]
+
+        completed_list_str = '\n'.join(
+            f"  - {c['name']} ({c['category']})"
+            for c in completed_courses
+        ) if completed_courses else '  None yet'
+
+        available_list_str = '\n'.join(
+            f"  - {c['name']} (category: {c['category']}, level: {c['level']}, difficulty: {c['difficulty']})"
+            for c in available_courses
+        )
+
+        # 3. Build the context
         interests_str = ', '.join(interests) if interests else 'Not specified'
 
         system_prompt = f"""You are a Smart Study Advisor for Alexandria University's Computer & Systems Engineering (CSE) department.
 
-Student profile:
-- Completed courses: {completed_str}
-- Interests: {interests_str}
+=== STUDENT PROFILE ===
+Interests: {interests_str}
 
-The available course categories are: math, programming, hardware, theory, ai, systems, general.
+=== COURSES ALREADY COMPLETED (for context only — DO NOT recommend these) ===
+{completed_list_str}
 
-Give helpful, specific, friendly advice about their studies. Keep it concise (3-5 sentences max).
-If recommending courses, mention why they fit the student's interests and completed courses.
-Do not use markdown formatting like ** or ## — use plain text only."""
+=== COURSES NOT YET TAKEN (you may ONLY recommend from this list) ===
+{available_list_str}
+
+=== RULES ===
+1. You may ONLY recommend courses from the "NOT YET TAKEN" list above.
+2. You must NEVER recommend any course from the "ALREADY COMPLETED" list.
+3. Use the exact course name as written above.
+4. Format your reply as:
+   - One short summary sentence.
+   - Bullet points using "•" for each recommended course with a brief reason.
+   - One encouraging closing sentence.
+5. Use plain text only. No markdown, no bold, no headers."""
 
         try:
             # 3. Call the Llama 3 model via Groq
@@ -137,7 +164,9 @@ Do not use markdown formatting like ** or ## — use plain text only."""
                         "content": user_message
                     }
                 ],
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
+                max_tokens=500,
+                timeout=15,
             )
             
             # 4. Extract and return the text
