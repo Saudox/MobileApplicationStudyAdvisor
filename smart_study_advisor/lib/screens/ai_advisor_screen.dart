@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -14,7 +16,10 @@ class AiAdvisorScreen extends StatefulWidget {
 }
 
 class _AiAdvisorScreenState extends State<AiAdvisorScreen> {
-  static const String _backendUrl = 'http://localhost:8000/api/advisor/ai-chat/';
+  String get _backendUrl {
+    final host = kIsWeb ? 'localhost' : (Platform.isAndroid ? '10.0.2.2' : 'localhost');
+    return 'http://$host:8000/api/advisor/ai-chat/';
+  }
 
   final TextEditingController _questionCtrl = TextEditingController();
   final ScrollController _scrollCtrl = ScrollController();
@@ -145,7 +150,7 @@ class _AiAdvisorScreenState extends State<AiAdvisorScreen> {
                         color: AppTheme.textPrimary,
                         fontSize: 18,
                         fontWeight: FontWeight.w700)),
-                Text('Powered by Gemini',
+                Text('Powered by Llama 3 via Groq',
                     style: TextStyle(
                         color: AppTheme.textMuted, fontSize: 11)),
               ],

@@ -1,9 +1,13 @@
 import 'dart:convert';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:http/http.dart' as http;
 import '../models/course.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:8000/api';
+  static String get _host =>
+      !kIsWeb && Platform.isAndroid ? '10.0.2.2' : 'localhost';
+  static String get baseUrl => 'http://$_host:8000/api';
 
   static Map<String, String> get _headers => {
         'Content-Type': 'application/json',

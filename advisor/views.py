@@ -1,10 +1,17 @@
+# pyrefly: ignore [missing-import]
 from rest_framework.views import APIView
+# pyrefly: ignore [missing-import]
 from rest_framework.response import Response
+# pyrefly: ignore [missing-import]
 from rest_framework import status
 from .prolog_engine import PrologAdvisor
+# pyrefly: ignore [missing-import]
 from .serializers import RecommendationRequestSerializer, EligibilityRequestSerializer, StatsRequestSerializer
+# pyrefly: ignore [missing-import]
 from courses.serializers import CourseSerializer
+# pyrefly: ignore [missing-import]
 from django.conf import settings
+# pyrefly: ignore [missing-import]
 from groq import Groq
 
 class RecommendationView(APIView):
