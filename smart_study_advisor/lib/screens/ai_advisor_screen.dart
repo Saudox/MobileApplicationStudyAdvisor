@@ -14,9 +14,7 @@ class AiAdvisorScreen extends StatefulWidget {
 }
 
 class _AiAdvisorScreenState extends State<AiAdvisorScreen> {
-  static const String _apiKey = 'AIzaSyDgtjSDQTopn_8HuO7NdzOGoeOFFOh5-PY';
-  static const String _apiUrl =
-      'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent';
+  static const String _backendUrl = 'http://localhost:8000/api/advisor/ai-chat/';
 
   final TextEditingController _questionCtrl = TextEditingController();
   final ScrollController _scrollCtrl = ScrollController();
@@ -31,29 +29,6 @@ class _AiAdvisorScreenState extends State<AiAdvisorScreen> {
     super.dispose();
   }
 
-  String _buildPrompt(String userQuestion, StudentProvider provider) {
-    final completed = provider.completedCourses.isEmpty
-        ? 'None yet'
-        : provider.completedCourses.join(', ');
-    final interests = provider.interests.isEmpty
-        ? 'Not specified'
-        : provider.interests.join(', ');
-
-    return '''You are a Smart Study Advisor for Alexandria University's Computer & Systems Engineering (CSE) department.
-
-Student profile:
-- Completed courses: $completed
-- Interests: $interests
-
-The available course categories are: math, programming, hardware, theory, ai, systems, general.
-
-The student asks: "$userQuestion"
-
-Give helpful, specific, friendly advice about their studies. Keep it concise (3-5 sentences max). 
-If recommending courses, mention why they fit the student's interests and completed courses.
-Do not use markdown formatting like ** or ## — use plain text only.''';
-  }
-
   Future<void> _sendMessage(String question, StudentProvider provider) async {
     if (question.trim().isEmpty) return;
 
@@ -66,38 +41,33 @@ Do not use markdown formatting like ** or ## — use plain text only.''';
 
     try {
       final response = await http.post(
-        Uri.parse('$_apiUrl?key=$_apiKey'),
-        headers: {'Content-Type': 'application/json'},
+        Uri.parse(_backendUrl),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
         body: jsonEncode({
-          'contents': [
-            {
-              'parts': [
-                {'text': _buildPrompt(question, provider)}
-              ]
-            }
-          ],
-          'generationConfig': {
-            'temperature': 0.7,
-            'maxOutputTokens': 300,
-          }
+          'message': question,
+          'completed': provider.completedCourses.toList(),
+          'interests': provider.interests.toList(),
         }),
       );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        final text = data['candidates'][0]['content']['parts'][0]['text']
-            as String;
+        final text = data['reply'] as String;
         setState(() {
           _messages.add(_Message(text: text.trim(), isUser: false));
           _loading = false;
         });
       } else {
-        throw Exception('Status ${response.statusCode}');
+        final data = jsonDecode(response.body);
+        throw Exception(data['error'] ?? 'Status ${response.statusCode}');
       }
     } catch (e) {
       setState(() {
         _messages.add(_Message(
-          text: 'Sorry, I could not connect to the AI. Check your internet connection and try again.',
+          text: 'Sorry, I could not connect to the AI. Make sure the backend server is running and try again.',
           isUser: false,
           isError: true,
         ));

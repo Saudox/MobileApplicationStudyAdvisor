@@ -1,1 +1,39 @@
+# ─── Python / Django ───────────────────────────────────────
 venv/
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+db.sqlite3
+*.log
+.env
+
+# ─── IDE ───────────────────────────────────────────────────
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ─── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ─── Flutter ───────────────────────────────────────────────
+smart_study_advisor/.dart_tool/
+smart_study_advisor/build/
+smart_study_advisor/.flutter-plugins-dependencies
+smart_study_advisor/.metadata
+smart_study_advisor/.idea/
+smart_study_advisor/*.iml
+smart_study_advisor/android/.gradle/
+smart_study_advisor/android/local.properties
+smart_study_advisor/android/app/build/
+
+# ─── Android SDK / Emulator ───────────────────────────────
+*.apk
+*.aab
+
+# ─── Test files ────────────────────────────────────────────
+test_gemini.py
+test_groq.py

@@ -85,3 +85,10 @@ SPECTACULAR_SETTINGS = {
 # Prolog engine — path to advisor.pl
 # ---------------------------------------------------------------------------
 PROLOG_FILE = BASE_DIR / 'advisor.pl'
+
+
+# ---------------------------------------------------------------------------
+# GROQ API Key (loaded from environment variable)
+# ---------------------------------------------------------------------------
+import os
+GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")

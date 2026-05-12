@@ -4,6 +4,8 @@ from rest_framework import status
 from .prolog_engine import PrologAdvisor
 from .serializers import RecommendationRequestSerializer, EligibilityRequestSerializer, StatsRequestSerializer
 from courses.serializers import CourseSerializer
+from django.conf import settings
+from groq import Groq
 
 class RecommendationView(APIView):
     """
@@ -85,3 +87,55 @@ class StatsView(APIView):
                 "levels": levels
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AIChatView(APIView):
+    def post(self, request):
+        user_message = request.data.get('message', '')
+        completed = request.data.get('completed', [])
+        interests = request.data.get('interests', [])
+
+        if not user_message.strip():
+            return Response({"error": "Message cannot be empty"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # 1. Create the Groq client
+        client = Groq(api_key=settings.GROQ_API_KEY)
+
+        # 2. Build the context
+        completed_str = ', '.join(completed) if completed else 'None yet'
+        interests_str = ', '.join(interests) if interests else 'Not specified'
+
+        system_prompt = f"""You are a Smart Study Advisor for Alexandria University's Computer & Systems Engineering (CSE) department.
+
+Student profile:
+- Completed courses: {completed_str}
+- Interests: {interests_str}
+
+The available course categories are: math, programming, hardware, theory, ai, systems, general.
+
+Give helpful, specific, friendly advice about their studies. Keep it concise (3-5 sentences max).
+If recommending courses, mention why they fit the student's interests and completed courses.
+Do not use markdown formatting like ** or ## — use plain text only."""
+
+        try:
+            # 3. Call the Llama 3 model via Groq
+            chat_completion = client.chat.completions.create(
+                messages=[
+                    {
+                        "role": "system",
+                        "content": system_prompt
+                    },
+                    {
+                        "role": "user",
+                        "content": user_message
+                    }
+                ],
+                model="llama-3.3-70b-versatile",
+            )
+            
+            # 4. Extract and return the text
+            reply_text = chat_completion.choices[0].message.content
+            return Response({"reply": reply_text})
+            
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
