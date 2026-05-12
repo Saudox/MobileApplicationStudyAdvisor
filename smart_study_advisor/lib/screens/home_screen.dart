@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../widgets/common_widgets.dart';
 import 'recommendations_screen.dart';
 import 'courses_screen.dart';
+import 'ai_advisor_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,11 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _DashboardTab(),
     CoursesScreen(),
     RecommendationsScreen(),
+    AiAdvisorScreen(),
   ];
 
   void _onTabChanged(int i) {
     setState(() => _currentIndex = i);
-    // Refresh stats whenever user goes back to dashboard
     if (i == 0) {
       context.read<StudentProvider>().fetchStats();
     }
@@ -53,6 +54,11 @@ class _HomeScreenState extends State<HomeScreen> {
             icon: Icon(Icons.auto_awesome_outlined),
             selectedIcon: Icon(Icons.auto_awesome_rounded),
             label: 'Advisor',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.psychology_outlined),
+            selectedIcon: Icon(Icons.psychology_rounded),
+            label: 'AI Chat',
           ),
         ],
       ),
